@@ -1,0 +1,1 @@
+export WEATHER="$(curl "wttr.in/?format=j2")"
