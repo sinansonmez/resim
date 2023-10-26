@@ -28,7 +28,7 @@ SHELL [ "bash", "-lic" ]
 RUN curl -fsSL https://sh.rustup.rs | sh -s -- -y
 
 # Install tools using cargo and rustup
-RUN cargo install sqlx-cli cargo-tree cargo-watch wasm-pack wasm-bindgen rust-std
+RUN cargo install sqlx-cli cargo-tree cargo-watch wasm-pack wasm-bindgen
 RUN rustup target add wasm32-unknown-unknown
 
 # Install more packages with apt
