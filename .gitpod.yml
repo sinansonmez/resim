@@ -9,10 +9,11 @@ tasks:
   - name: Rust
     before: cd /workspace/rust-typescript-react/rust
     init: cargo build
-    command: cargo watch -x run
+    command: wasm-pack build
     openMode: split-right
 
 ports:
-  - port: 3000
-    onOpen: open-preview
+  - port: 9001
+    onOpen: open-browser
     description: Website preview
+    visibility: public

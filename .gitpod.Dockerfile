@@ -27,8 +27,9 @@ SHELL [ "bash", "-lic" ]
 # Install rust tooling
 RUN curl -fsSL https://sh.rustup.rs | sh -s -- -y
 
-# Install tools using cargo
-RUN cargo install sqlx-cli cargo-tree cargo-watch
+# Install tools using cargo and rustup
+RUN cargo install sqlx-cli cargo-tree cargo-watch wasm-pack wasm-bindgen rust-std
+RUN rustup target add wasm32-unknown-unknown
 
 # Install more packages with apt
 RUN sudo apt install -yq shellcheck cowsay
