@@ -1,43 +1,43 @@
 {
-  "name": "template-typescript-react",
+  "name": "create-wasm-app",
   "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
-    "@types/jest": "^26.0.15",
-    "@types/node": "^12.0.0",
-    "@types/react": "^17.0.0",
-    "@types/react-dom": "^17.0.0",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-scripts": "4.0.3",
-    "typescript": "^4.1.2",
-    "web-vitals": "^1.0.1"
+  "description": "create an app to consume rust-generated wasm packages",
+  "main": "index.js",
+  "bin": {
+    "create-wasm-app": ".bin/create-wasm-app.js"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "build": "webpack --config webpack.config.js",
+    "start": "webpack-dev-server"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rustwasm/create-wasm-app.git"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "keywords": [
+    "webassembly",
+    "wasm",
+    "rust",
+    "webpack"
+  ],
+  "author": "Ashley Williams <ashley666ashley@gmail.com>",
+  "license": "(MIT OR Apache-2.0)",
+  "bugs": {
+    "url": "https://github.com/rustwasm/create-wasm-app/issues"
+  },
+  "homepage": "https://github.com/rustwasm/create-wasm-app#readme",
+  "devDependencies": {
+    "copy-webpack-plugin": "^5.0.0",
+    "hello-wasm-pack": "file:../rust/pkg",
+    "webpack": "^4.29.3",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.5"
+  },
+  "dependencies": {
+    "@babel/preset-env": "^7.23.2",
+    "@babel/preset-react": "^7.22.15",
+    "babel-loader": "^8.3.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }

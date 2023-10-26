@@ -4,7 +4,9 @@ tasks:
   - name: React
     before: cd /workspace/rust-typescript-react/react
     init: npm i
-    command: npm run start
+    command: |
+      export HMR_HOST=`gp url 8080`
+      npm run start
 
   - name: Rust
     before: cd /workspace/rust-typescript-react/rust
@@ -13,7 +15,7 @@ tasks:
     openMode: split-right
 
 ports:
-  - port: 9001
+  - port: 8080
     onOpen: open-browser
     description: Website preview
     visibility: public
