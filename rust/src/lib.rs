@@ -1,6 +1,7 @@
 mod utils;
 
 use wasm_bindgen::prelude::*;
+use image::io::Reader as ImageReader;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -14,6 +15,7 @@ extern {
 }
 
 #[wasm_bindgen]
-pub fn greet(name: &str) {
-    alert(&format!("Hello, {}!", name));
+pub fn greet(path: &str) {
+    let img = ImageReader::open(path)?.decode()?;
+    alert(&format!("Hello, {}!", path));
 }

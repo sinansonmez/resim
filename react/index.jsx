@@ -7,7 +7,7 @@ const Component = () => {
     return (
         <>
             <div style={{ display: 'flex' }} >
-                <button onClick={() => wasm.greet('sinan')} >Hello from React!</button>
+                <button onClick={() => wasm.greet(cat)} >Hello from React!</button>
             </div>
             <div>
                 <img src={cat} width={250} />
