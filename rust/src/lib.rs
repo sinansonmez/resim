@@ -1,7 +1,9 @@
 mod utils;
 
 use wasm_bindgen::prelude::*;
-use image::io::Reader as ImageReader;
+use image::{open, ImageFormat};
+use web_sys::console;
+use js_sys::Error;
 
 // When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
 // allocator.
@@ -15,7 +17,27 @@ extern {
 }
 
 #[wasm_bindgen]
-pub fn greet(path: &str) {
-    let img = ImageReader::open(path)?.decode()?;
-    alert(&format!("Hello, {}!", path));
+pub fn greet(path: &str) -> Result<(), JsValue> {
+        // Open the image
+        let img = match open(path) {
+            Ok(image) => image,
+            Err(err) => {
+                console::error_1(&format!("Error opening image: {}", err).into());
+                return Err(Error::new(&format!("Error opening image: {}", err)).into());
+            }
+        };
+    
+        // Convert to grayscale
+        let grayscale_img = img.grayscale();
+    
+        // Save the grayscale image
+        let output_path = "output.png"; // Change the output path as needed
+        match grayscale_img.save_with_format(output_path, ImageFormat::Png) {
+            Ok(_) => Ok(()),
+            Err(err) => {
+                console::error_1(&format!("Error saving image: {}", err.to_string()).into());
+                Err(Error::new(&format!("Error saving image: {}", err.to_string())).into())
+            }
+        }
+    // alert(&format!("Hello, {}!", path));
 }
