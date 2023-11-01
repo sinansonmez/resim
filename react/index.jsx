@@ -6,37 +6,48 @@ import dice from './asset/dice.png'
 
 const Component = () => {
 
-    async function loadImageAsUint8Array(imagePath) {
-        try {
-            const response = await fetch(imagePath);
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+    // Function to convert an image to a Base64 encoded string
+    function getBase64Image(imagePath, callback) {
+        const reader = new FileReader();
+      
+        reader.onload = function () {
+          if (typeof callback === 'function') {
+            callback(reader.result);
+          }
+        };
+      
+        // Assuming imagePath is a valid local path to the image file
+        fetch(imagePath)
+          .then((response) => response.blob())
+          .then((blob) => {
+            reader.readAsDataURL(blob);
+          })
+          .catch((error) => {
+            console.error('Error loading image:', error);
+            if (typeof callback === 'function') {
+              callback(null);
             }
-            const arrayBuffer = await response.arrayBuffer();
-            // Create a Uint8Array from the array buffer
-            const uint8Array = new Uint8Array(arrayBuffer);
-            return uint8Array;
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    }
+          });
+      }
 
     const onClickHandler = async (imageUrl) => {
         console.time('start')
-        const uint8Array = await loadImageAsUint8Array(imageUrl)
-        if (uint8Array) {
-            console.log('Uint8Array:', uint8Array);
-            const image = wasm.greet(uint8Array)
-            // Create a Blob from the Uint8Array
-            const blob = new Blob([image], { type: 'image/png' });
-
-            // Create a Data URL from the Blob
-            const url = URL.createObjectURL(blob);
-            document.getElementById('new').src = url;
-            console.log("new image: ", image);
-        } else {
-            console.err('Error loading the image.');
-        }
+        getBase64Image(imageUrl, (base64) => {
+            if (base64) {
+                let data = base64.replace(/^data:image\/(png|jpg);base64,/, "");
+                console.log('Uint8Array:', base64);
+                const image = wasm.greet(data)
+                // Create a Blob from the Uint8Array
+                const blob = new Blob([image], { type: 'image/png' });
+    
+                // Create a Data URL from the Blob
+                const url = URL.createObjectURL(blob);
+                document.getElementById('new').src = url;
+                console.log("new image: ", image);
+            } else {
+                console.err('Error loading the image.');
+            }
+        })
         console.timeEnd('start')
     }
     return (
