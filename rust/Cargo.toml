@@ -1,6 +1,6 @@
 [package]
-name = "hello-world"
-version = "0.1.0"
+name = "resim"
+version = "0.0.1-alpha"
 authors = ["sinansonmez@outlook.com"]
 edition = "2021"
 

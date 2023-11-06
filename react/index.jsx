@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import * as wasm from "hello-wasm-pack";
+import React from 'react';
+import * as resim from "resim";
 import { createRoot } from 'react-dom/client';
 import dice from './asset/dice.png'
 
@@ -33,7 +33,7 @@ const Component = () => {
     getBase64Image(imageUrl, (base64) => {
       if (base64) {
         let data = base64.replace(/^data:image\/(png|jpeg);base64,/, "");
-        const image = wasm.grayscale(data)
+        const image = resim.grayscale(data)
         // Create a canvas element
         const canvas = document.createElement('canvas');
 
