@@ -1,19 +1,25 @@
-# A Create React App template on Gitpod
+# Resim - Image Manipulation written in Rust for Javascript worl
 
-This is a [Create React App](https://create-react-app.dev/) template configured for ephemeral cloud development environments on [Gitpod](https://www.gitpod.io/).
+Resim is an npm package that allows you to perform various image manipulations on your images using Rust, a fast and efficient programming language. Currently, Resim supports converting png images to grayscale, and it aims to expand its feature set in the future.
 
-## Next Steps
+Disclaimer: Resim is still at a very early phase of development, so don't use it for production.
 
-Click the button below to start a new development environment:
+P.S.: Resim means image in Turkish
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/gitpod-io/template-typescript-react)
+## Features
 
-## Get Started With Your Own Project
+- Convert images to grayscale.
 
-### A new project
+## Installation
 
-Click the above "Open in Gitpod" button to start a new workspace. Once you're ready to push your first code changes, Gitpod will guide you to fork this project so you own it.
+You can install Resim using npm:
 
-### An existing project
+```bash
+npm install resim
 
-To get started with Create React App on Gitpod, add a [`.gitpod.yml`](./.gitpod.yml) file which contains the configuration to improve the developer experience on Gitpod. To learn more, please see the [Getting Started](https://www.gitpod.io/docs/getting-started) documentation.
+## Usage
+```JavaScript
+import * as resim from "resim";
+
+resim.grayscale([BASE64 OF AN IMAGE]) // it will return an [ImageData](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/ImageData)
+
