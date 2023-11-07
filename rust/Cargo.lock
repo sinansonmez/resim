@@ -365,7 +365,7 @@ dependencies = [
 
 [[package]]
 name = "resim"
-version = "0.0.3-alpha"
+version = "0.0.4-alpha"
 dependencies = [
  "base64",
  "console_error_panic_hook",

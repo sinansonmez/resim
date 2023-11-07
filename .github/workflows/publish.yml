@@ -11,6 +11,10 @@ jobs:
         working-directory: ./rust
     steps:
       - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: https://registry.npmjs.org/
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -24,6 +28,6 @@ jobs:
       - name: wasm-build
         run: wasm-pack build
       - name: wasm-publish
-        run: wasm-pack publish
+        run: wasm-pack publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
