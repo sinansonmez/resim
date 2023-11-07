@@ -15,7 +15,6 @@ jobs:
           toolchain: stable
           override: true
       - run: cd rust
-      - uses: actions-rs/cargo@v1
       - name: cargo-build
         run: cargo build
       - name: wasm-build
