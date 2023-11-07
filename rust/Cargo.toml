@@ -1,8 +1,12 @@
 [package]
 name = "resim"
-version = "0.0.2-alpha"
+version = "0.0.3-alpha"
+description = "Fast image manipulation library for JavaScript world"
 authors = ["sinansonmez@outlook.com"]
 edition = "2021"
+readme = "./README.md"
+repository = "https://github.com/sinansonmez/resim"
+homepage = "https://github.com/sinansonmez/resim"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
