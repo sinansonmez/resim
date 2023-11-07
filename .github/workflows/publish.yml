@@ -14,10 +14,14 @@ jobs:
           target: wasm32-unknown-unknown
           toolchain: stable
           override: true
+      - run: cd rust
       - uses: actions-rs/cargo@v1
-      - run: cargo build
-      - run: wasm-pack build
-      - run: wasm-pack publish
+      - name: cargo-build
+        run: cargo build
+      - name: wasm-build
+        run: wasm-pack build
+      - name: wasm-publish
+        run: wasm-pack publish
         with:
           access: public
           token: ${{ secrets.NPM_TOKEN }}
