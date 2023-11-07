@@ -22,6 +22,5 @@ jobs:
         run: wasm-pack build
       - name: wasm-publish
         run: wasm-pack publish
-        with:
-          access: public
-          token: ${{ secrets.NPM_TOKEN }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
