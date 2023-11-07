@@ -1,4 +1,4 @@
-# Resim - Image Manipulation written in Rust for Javascript worl
+# Resim - Image Manipulation written in Rust for Javascript world
 
 Resim is an npm package that allows you to perform various image manipulations on your images using Rust, a fast and efficient programming language. Currently, Resim supports converting png images to grayscale, and it aims to expand its feature set in the future.
 
