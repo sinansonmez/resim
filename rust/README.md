@@ -4,7 +4,7 @@ Resim is an npm package that allows you to perform various image manipulations o
 
 Disclaimer: Resim is still at a very early phase of development, so don't use it for production.
 
-P.S.: Resim means image in Turkish
+P.S.: Resim means 'image' in Turkish
 
 ## Features
 
@@ -21,4 +21,9 @@ npm install resim
 ```JavaScript
 import * as resim from "resim";
 
-resim.grayscale([BASE64 OF AN IMAGE]) // it will return an [ImageData](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/ImageData)
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+ctx.drawImage(document.getElementById('image'), 0, 0);
+const imageResim = resim.convertToGrayscale(canvas, ctx)
+resim.placeImage(canvas, ctx, imageResim);

@@ -1,6 +1,6 @@
 [package]
 name = "resim"
-version = "0.0.4-alpha"
+version = "0.0.5-alpha"
 description = "Fast image manipulation library for JavaScript world"
 authors = ["sinansonmez@outlook.com"]
 edition = "2021"
@@ -31,6 +31,8 @@ version = "0.3.64"
 features = [
   "ImageData",
   "console",
+  "HtmlCanvasElement",
+  "CanvasRenderingContext2d"
 ]
 optional = true
 
