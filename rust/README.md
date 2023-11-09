@@ -16,6 +16,7 @@ You can install Resim using npm:
 
 ```bash
 npm install resim
+```
 
 ## Usage
 ```JavaScript
