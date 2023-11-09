@@ -14,12 +14,12 @@ P.S.: Resim means 'image' in Turkish
 
 You can install Resim using npm:
 
-```bash
+```javascript
 npm install resim
 ```
 
 ## Usage
-```JavaScript
+```javascript
 import * as resim from "resim";
 
 var canvas = document.getElementById("canvas");
