@@ -27,3 +27,6 @@ var ctx = canvas.getContext("2d");
 ctx.drawImage(document.getElementById('image'), 0, 0);
 const imageResim = resim.convertToGrayscale(canvas, ctx)
 resim.placeImage(canvas, ctx, imageResim);
+
+## Example
+Take a look at sample implementation [here](https://github.com/sinansonmez/resim/blob/main/react/index.jsx)
