@@ -1,10 +1,10 @@
-# Resim - Image Manipulation written in Rust for Javascript worl
+# Resim - Image Manipulation written in Rust for Javascript world
 
 Resim is an npm package that allows you to perform various image manipulations on your images using Rust, a fast and efficient programming language. Currently, Resim supports converting png images to grayscale, and it aims to expand its feature set in the future.
 
 Disclaimer: Resim is still at a very early phase of development, so don't use it for production.
 
-P.S.: Resim means image in Turkish
+P.S.: Resim means 'image' in Turkish
 
 ## Features
 
@@ -14,12 +14,21 @@ P.S.: Resim means image in Turkish
 
 You can install Resim using npm:
 
-```bash
+```javascript
 npm install resim
+```
 
 ## Usage
-```JavaScript
+```javascript
 import * as resim from "resim";
 
-resim.grayscale([BASE64 OF AN IMAGE]) // it will return an [ImageData](https://developer.mozilla.org/en-US/docs/Web/API/ImageData/ImageData)
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
 
+ctx.drawImage(document.getElementById('image'), 0, 0);
+const imageResim = resim.convertToGrayscale(canvas, ctx)
+resim.placeImage(canvas, ctx, imageResim);
+```
+
+## Example
+Take a look at sample implementation [here](https://github.com/sinansonmez/resim/blob/main/react/index.jsx)
