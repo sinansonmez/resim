@@ -1,7 +1,7 @@
 import React from 'react';
 import * as resim from "resim";
 import { createRoot } from 'react-dom/client';
-import dice from './asset/dice.png'
+import cat from './asset/cat.jpeg'
 
 const Component = () => {
 
@@ -19,11 +19,11 @@ const Component = () => {
   return (
     <>
       <div style={{ display: 'flex' }} >
-        <button onClick={() => onClickHandler(dice)} >Hello from React!</button>
+        <button onClick={() => onClickHandler()} >Convert</button>
       </div>
       <div>
-        <img id='dice' src={dice} />
-        <canvas id='canvas' width={800} height={600} />
+        <img id='dice' src={cat} />
+        <canvas id='canvas' width={1000} height={1000} />
       </div>
     </>
   );
