@@ -1,6 +1,6 @@
 [package]
 name = "resim"
-version = "0.0.5-alpha"
+version = "0.0.6-alpha"
 description = "Fast image manipulation library for JavaScript world"
 authors = ["sinansonmez@outlook.com"]
 edition = "2021"

@@ -12,7 +12,7 @@ pub fn get_image_data_from_pixels(mut raw_pixels: Vec<u8>, width: u32, height: u
 
     let image_data =
         ImageData::new_with_u8_clamped_array_and_sh(Clamped(&mut raw_pixels), width, height);
-    
+
     match image_data {
         Ok(image_data_success) => image_data_success,
         Err(image_data_err) => {
@@ -24,7 +24,10 @@ pub fn get_image_data_from_pixels(mut raw_pixels: Vec<u8>, width: u32, height: u
     }
 }
 
-pub fn get_image_data_from_canvas(canvas: &HtmlCanvasElement, ctx: &CanvasRenderingContext2d) -> ImageData {
+pub fn get_image_data_from_canvas(
+    canvas: &HtmlCanvasElement,
+    ctx: &CanvasRenderingContext2d,
+) -> ImageData {
     let width = canvas.width();
     let height = canvas.height();
 
@@ -57,6 +60,17 @@ pub fn grayscale(mut img: Vec<u8>) -> Vec<u8> {
     img
 }
 
+pub fn invert_colors(mut img: Vec<u8>) -> Vec<u8> {
+    let end = img.len();
+
+    for i in (0..end).step_by(4) {
+        img[i] = 255 - img[i];
+        img[i + 1] = 255 - img[i + 1];
+        img[i + 2] = 255 - img[i + 2];
+    }
+    img
+}
+
 #[wasm_bindgen]
 #[allow(non_snake_case)]
 pub fn convertToGrayscale(canvas: HtmlCanvasElement, ctx: CanvasRenderingContext2d) -> ImageData {
@@ -68,11 +82,7 @@ pub fn convertToGrayscale(canvas: HtmlCanvasElement, ctx: CanvasRenderingContext
 
 #[wasm_bindgen]
 #[allow(non_snake_case)]
-pub fn placeImage(
-    canvas: HtmlCanvasElement,
-    ctx: CanvasRenderingContext2d,
-    new_image: ImageData,
-) {
+pub fn placeImage(canvas: HtmlCanvasElement, ctx: CanvasRenderingContext2d, new_image: ImageData) {
     let mut raw_pixels = to_raw_pixels(new_image);
     let new_img_data = ImageData::new_with_u8_clamped_array_and_sh(
         Clamped(&mut raw_pixels),
@@ -82,4 +92,13 @@ pub fn placeImage(
 
     ctx.put_image_data(&new_img_data.unwrap(), 0.0, 0.0)
         .expect("place image on canvas");
+}
+
+#[wasm_bindgen]
+#[allow(non_snake_case)]
+pub fn invertColors(canvas: HtmlCanvasElement, ctx: CanvasRenderingContext2d) -> ImageData {
+    let imgdata = get_image_data_from_canvas(&canvas, &ctx);
+    let raw_pixels = to_raw_pixels(imgdata);
+    let inverted_raw_pixels = invert_colors(raw_pixels);
+    get_image_data_from_pixels(inverted_raw_pixels, canvas.width(), canvas.height())
 }
