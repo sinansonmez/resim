@@ -8,8 +8,8 @@ P.S.: Resim means 'image' in Turkish
 
 ## Features
 
-- Convert images to grayscale.
-- Convert images to have inverted colors
+- Convert images to grayscale (function name: `convertToGrayscale`)
+- Convert images to have inverted colors (function name: `invertColors`)
 
 ## Installation
 
