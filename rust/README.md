@@ -9,6 +9,7 @@ P.S.: Resim means 'image' in Turkish
 ## Features
 
 - Convert images to grayscale.
+- Convert images to have inverted colors
 
 ## Installation
 
