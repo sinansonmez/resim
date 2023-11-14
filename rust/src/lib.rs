@@ -71,6 +71,36 @@ pub fn invert_colors(mut img: Vec<u8>) -> Vec<u8> {
     img
 }
 
+pub fn blur(img: Vec<u8>, width: u32, height: u32) -> Vec<u8> {
+    let mut new_img = img.clone();
+
+    for y in 1..(height - 1) {
+        for x in 1..(width - 1) {
+            let mut r: u32 = 0;
+            let mut g: u32 = 0;
+            let mut b: u32 = 0;
+
+            // Sum the color values of the current pixel and its surrounding pixels
+            for dy in -1..=1 {
+                for dx in -1..=1 {
+                    let pixel_index = ((y as i32 + dy) as u32 * width + (x as i32 + dx) as u32) * 4;
+                    r += img[pixel_index as usize] as u32;
+                    g += img[pixel_index as usize + 1] as u32;
+                    b += img[pixel_index as usize + 2] as u32;
+                }
+            }
+
+            // Calculate the average color value
+            let pixel_index = (y * width + x) * 4;
+            new_img[pixel_index as usize] = (r / 9) as u8;
+            new_img[pixel_index as usize + 1] = (g / 9) as u8;
+            new_img[pixel_index as usize + 2] = (b / 9) as u8;
+        }
+    }
+
+    new_img
+}
+
 #[wasm_bindgen]
 #[allow(non_snake_case)]
 pub fn convertToGrayscale(canvas: HtmlCanvasElement, ctx: CanvasRenderingContext2d) -> ImageData {
@@ -101,4 +131,13 @@ pub fn invertColors(canvas: HtmlCanvasElement, ctx: CanvasRenderingContext2d) ->
     let raw_pixels = to_raw_pixels(imgdata);
     let inverted_raw_pixels = invert_colors(raw_pixels);
     get_image_data_from_pixels(inverted_raw_pixels, canvas.width(), canvas.height())
+}
+
+#[wasm_bindgen]
+#[allow(non_snake_case)]
+pub fn blurImage(canvas: HtmlCanvasElement, ctx: CanvasRenderingContext2d) -> ImageData {
+    let imgdata = get_image_data_from_canvas(&canvas, &ctx);
+    let raw_pixels = to_raw_pixels(imgdata);
+    let blurred_raw_pixels = blur(raw_pixels, canvas.width(), canvas.height());
+    get_image_data_from_pixels(blurred_raw_pixels, canvas.width(), canvas.height())
 }
