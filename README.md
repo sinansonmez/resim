@@ -12,8 +12,20 @@ working local demo rather than wide feature coverage.
 - `grayscaleImageData`
 - `invertImageData`
 - `blurImageData`
+- `brightnessImageData`
+- `contrastImageData`
+- `thresholdImageData`
 - `readCanvasImageData`
 - `writeCanvasImageData`
+
+The React demo currently supports:
+
+- selecting built-in transforms and adjusting parameters
+- uploading a local image and restoring the bundled sample
+- side-by-side comparison of original vs processed output
+- undoing the last applied transform step
+- downloading the processed canvas as a PNG
+- driving its transform controls from the wasm-exported catalog metadata
 
 The Rust core keeps transform logic separate from browser bindings so the pixel-processing
 functions can be tested without DOM types.
@@ -22,7 +34,7 @@ functions can be tested without DOM types.
 
 - `rust/` contains the library source and wasm bindings.
 - `react/` contains the showcase app that imports the generated package.
-- `PLAN.md` captures the current project direction.
+- `CHANGELOG.md` tracks shipped changes.
 
 ## Local development
 
@@ -55,12 +67,12 @@ The React scripts call `wasm-pack` first, which generates `rust/pkg` with the we
 import {
   default as init,
   readCanvasImageData,
-  grayscaleImageData,
+  brightnessImageData,
   writeCanvasImageData,
-} from "resim";
+} from "@sinansonmez/resim";
 
 await init();
 const imageData = readCanvasImageData(canvas, ctx);
-const transformed = grayscaleImageData(imageData);
+const transformed = brightnessImageData(imageData, 30);
 writeCanvasImageData(ctx, transformed);
 ```

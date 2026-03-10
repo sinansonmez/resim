@@ -15,23 +15,28 @@ function loadWasmApi() {
   return wasmApiPromise;
 }
 
-const transformMetadata = {
-  grayscale: {
-    label: 'Grayscale',
-    description: 'Average RGB channels for a classic monochrome output.',
-    method: 'grayscaleImageData',
-  },
-  invert: {
-    label: 'Invert',
-    description: 'Flip every color channel while preserving transparency.',
-    method: 'invertImageData',
-  },
-  blur: {
-    label: 'Blur',
-    description: 'Apply a simple 3x3 box blur to soften the image.',
-    method: 'blurImageData',
-  },
-};
+function createTransformCatalog(entries) {
+  return Object.fromEntries(entries.map((entry) => [entry.id, entry]));
+}
+
+function createDefaultControls(entries) {
+  return Object.fromEntries(
+    entries
+      .filter((transform) => transform.control)
+      .map((transform) => [transform.id, transform.control.defaultValue])
+  );
+}
+
+function formatControlValue(control, value) {
+  switch (control.display) {
+    case 'signed':
+      return `${value > 0 ? '+' : ''}${value}`;
+    case 'signedPercent':
+      return `${value > 0 ? '+' : ''}${value}%`;
+    default:
+      return `${value}`;
+  }
+}
 
 const shellStyle = {
   minHeight: '100vh',
@@ -43,7 +48,7 @@ const shellStyle = {
 };
 
 const pageStyle = {
-  maxWidth: '1200px',
+  maxWidth: '1220px',
   margin: '0 auto',
   padding: '48px 24px 64px',
 };
@@ -72,7 +77,7 @@ const titleStyle = {
 };
 
 const subtitleStyle = {
-  maxWidth: '720px',
+  maxWidth: '760px',
   margin: 0,
   fontSize: '1.05rem',
   lineHeight: 1.7,
@@ -81,7 +86,7 @@ const subtitleStyle = {
 const layoutStyle = {
   display: 'grid',
   gap: '24px',
-  gridTemplateColumns: 'minmax(280px, 340px) minmax(0, 1fr)',
+  gridTemplateColumns: 'minmax(300px, 360px) minmax(0, 1fr)',
   alignItems: 'start',
 };
 
@@ -146,8 +151,31 @@ const surfaceStyles = `
     transform: translateY(-1px);
   }
 
+  input,
+  input[type="range"] {
+    width: 100%;
+  }
+
+  input[type="range"] {
+    accent-color: #ea6a47;
+  }
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #132238;
+  }
+
   @media (max-width: 860px) {
     .resim-layout {
+      grid-template-columns: 1fr !important;
+    }
+
+    .resim-action-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .resim-compare-grid {
       grid-template-columns: 1fr !important;
     }
   }
@@ -155,17 +183,33 @@ const surfaceStyles = `
 
 function Component() {
   const canvasRef = useRef(null);
+  const originalCanvasRef = useRef(null);
   const imageRef = useRef(null);
+  const fileInputRef = useRef(null);
   const originalImageDataRef = useRef(null);
   const wasmApiRef = useRef(null);
+  const uploadedImageUrlRef = useRef(null);
+  const historyRef = useRef([]);
 
-  const [selectedTransform, setSelectedTransform] = useState('grayscale');
+  const [transformCatalog, setTransformCatalog] = useState({});
+  const [selectedTransform, setSelectedTransform] = useState(null);
+  const [controlValues, setControlValues] = useState({});
+  const [sourceImageUrl, setSourceImageUrl] = useState(cat);
+  const [sourceLabel, setSourceLabel] = useState('Sample image');
+  const [isComparisonMode, setIsComparisonMode] = useState(false);
+  const [historyDepth, setHistoryDepth] = useState(0);
   const [status, setStatus] = useState('Loading WebAssembly module');
   const [isReady, setIsReady] = useState(false);
+
+  const transformEntries = Object.entries(transformCatalog);
+  const selectedConfig = selectedTransform ? transformCatalog[selectedTransform] : null;
+  const selectedControl = selectedConfig?.control ?? null;
+  const selectedControlValue = selectedControl ? controlValues[selectedTransform] : null;
 
   const syncCanvasWithSource = () => {
     const image = imageRef.current;
     const canvas = canvasRef.current;
+    const originalCanvas = originalCanvasRef.current;
     const wasmApi = wasmApiRef.current;
 
     if (!image || !canvas || !wasmApi) {
@@ -190,11 +234,26 @@ function Component() {
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(image, 0, 0, width, height);
 
+    if (originalCanvas) {
+      const originalCtx = originalCanvas.getContext('2d');
+      if (!originalCtx) {
+        setStatus('Comparison canvas is unavailable in this browser');
+        return;
+      }
+
+      originalCanvas.width = width;
+      originalCanvas.height = height;
+      originalCtx.clearRect(0, 0, width, height);
+      originalCtx.drawImage(image, 0, 0, width, height);
+    }
+
     try {
       const originalImageData = wasmApi.readCanvasImageData(canvas, ctx);
       originalImageDataRef.current = originalImageData;
+      historyRef.current = [];
+      setHistoryDepth(0);
       setIsReady(true);
-      setStatus('Sample image loaded');
+      setStatus(`${sourceLabel} loaded`);
     } catch (error) {
       setStatus(`Unable to read the canvas: ${String(error)}`);
     }
@@ -210,6 +269,14 @@ function Component() {
         }
 
         wasmApiRef.current = module;
+        const catalogEntries = module.getTransformCatalog ? module.getTransformCatalog() : [];
+        const nextCatalog = createTransformCatalog(catalogEntries);
+        const nextControlValues = createDefaultControls(catalogEntries);
+        const firstTransform = catalogEntries[0]?.id ?? null;
+
+        setTransformCatalog(nextCatalog);
+        setControlValues(nextControlValues);
+        setSelectedTransform(firstTransform);
         setStatus('WebAssembly module ready');
 
         const image = imageRef.current;
@@ -228,11 +295,25 @@ function Component() {
     };
   }, []);
 
+  useEffect(() => () => {
+    if (uploadedImageUrlRef.current) {
+      URL.revokeObjectURL(uploadedImageUrlRef.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isComparisonMode) {
+      return;
+    }
+
+    syncCanvasWithSource();
+  }, [isComparisonMode, sourceImageUrl]);
+
   const applySelectedTransform = () => {
     const canvas = canvasRef.current;
     const wasmApi = wasmApiRef.current;
 
-    if (!canvas || !isReady || !wasmApi) {
+    if (!canvas || !isReady || !wasmApi || !selectedConfig) {
       return;
     }
 
@@ -244,10 +325,17 @@ function Component() {
 
     try {
       const currentImageData = wasmApi.readCanvasImageData(canvas, ctx);
-      const transformedImageData =
-        wasmApi[transformMetadata[selectedTransform].method](currentImageData);
+      historyRef.current = [...historyRef.current, currentImageData];
+      setHistoryDepth(historyRef.current.length);
+      const transformedImageData = selectedControl
+        ? wasmApi[selectedConfig.method](currentImageData, selectedControlValue)
+        : wasmApi[selectedConfig.method](currentImageData);
       wasmApi.writeCanvasImageData(ctx, transformedImageData);
-      setStatus(`${transformMetadata[selectedTransform].label} applied`);
+
+      const suffix = selectedControl
+        ? ` (${formatControlValue(selectedControl, selectedControlValue)})`
+        : '';
+      setStatus(`${selectedConfig.label} applied${suffix}`);
     } catch (error) {
       setStatus(`Transform failed: ${String(error)}`);
     }
@@ -270,10 +358,115 @@ function Component() {
 
     try {
       wasmApi.writeCanvasImageData(ctx, originalImageData);
+      historyRef.current = [];
+      setHistoryDepth(0);
       setStatus('Preview reset to the original image');
     } catch (error) {
       setStatus(`Reset failed: ${String(error)}`);
     }
+  };
+
+  const undoLastStep = () => {
+    const canvas = canvasRef.current;
+    const wasmApi = wasmApiRef.current;
+
+    if (!canvas || !wasmApi || historyRef.current.length === 0) {
+      return;
+    }
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      setStatus('Canvas is unavailable in this browser');
+      return;
+    }
+
+    const previousImageData = historyRef.current[historyRef.current.length - 1];
+    historyRef.current = historyRef.current.slice(0, -1);
+    setHistoryDepth(historyRef.current.length);
+
+    try {
+      wasmApi.writeCanvasImageData(ctx, previousImageData);
+      setStatus('Reverted the last transform');
+    } catch (error) {
+      setStatus(`Undo failed: ${String(error)}`);
+    }
+  };
+
+  const updateControlValue = (event) => {
+    const nextValue = Number(event.target.value);
+    setControlValues((current) => ({
+      ...current,
+      [selectedTransform]: nextValue,
+    }));
+  };
+
+  const restoreSampleImage = () => {
+    if (uploadedImageUrlRef.current) {
+      URL.revokeObjectURL(uploadedImageUrlRef.current);
+      uploadedImageUrlRef.current = null;
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+
+    originalImageDataRef.current = null;
+    historyRef.current = [];
+    setHistoryDepth(0);
+    setIsReady(false);
+    setSourceLabel('Sample image');
+    setSourceImageUrl(cat);
+    setStatus('Loading sample image');
+  };
+
+  const handleFileSelection = (event) => {
+    const [file] = event.target.files || [];
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setStatus('Please choose an image file');
+      event.target.value = '';
+      return;
+    }
+
+    if (uploadedImageUrlRef.current) {
+      URL.revokeObjectURL(uploadedImageUrlRef.current);
+    }
+
+    const nextUrl = URL.createObjectURL(file);
+    uploadedImageUrlRef.current = nextUrl;
+    originalImageDataRef.current = null;
+    historyRef.current = [];
+    setHistoryDepth(0);
+    setIsReady(false);
+    setSourceLabel(file.name);
+    setSourceImageUrl(nextUrl);
+    setStatus(`Loading ${file.name}`);
+  };
+
+  const downloadPreview = () => {
+    const canvas = canvasRef.current;
+
+    if (!canvas || !isReady) {
+      return;
+    }
+
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        setStatus('Download failed: unable to generate PNG');
+        return;
+      }
+
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = 'resim-output.png';
+      link.click();
+      URL.revokeObjectURL(downloadUrl);
+      setStatus('Downloaded processed image as PNG');
+    }, 'image/png');
   };
 
   return (
@@ -285,8 +478,8 @@ function Component() {
           <h1 style={titleStyle}>Resim</h1>
           <p style={subtitleStyle}>
             A small open-source showcase for browser image transforms powered by Rust.
-            The library stays focused on a tight core API while this page demonstrates
-            how the generated wasm package can drive a real canvas workflow.
+            The library now includes practical parameterized filters while keeping the
+            JavaScript surface centered on <code>ImageData</code>.
           </p>
         </section>
 
@@ -295,13 +488,65 @@ function Component() {
             <div style={cardStyle}>
               <h2 style={{ margin: 0, fontSize: '1.4rem' }}>Transform controls</h2>
               <p style={{ margin: 0, lineHeight: 1.6 }}>
-                Choose a transform, apply it to the current preview, or reset the canvas
-                back to the original sample image.
+                Choose a transform, tune any available parameter, apply it to the current
+                preview, upload your own image, download the current result, or reset the
+                canvas back to the original source. Comparison mode and undo make it easier
+                to inspect incremental changes. The control list is now driven by the wasm
+                transform catalog instead of a separate demo-only map.
               </p>
             </div>
 
+            <div
+              style={{
+                display: 'grid',
+                gap: '12px',
+                marginBottom: '18px',
+                padding: '16px',
+                borderRadius: '20px',
+                background: 'rgba(19, 34, 56, 0.05)',
+              }}
+            >
+              <div>
+                <strong style={{ display: 'block', marginBottom: '6px' }}>Image source</strong>
+                <span style={{ lineHeight: 1.5 }}>{sourceLabel}</span>
+              </div>
+              <input
+                accept="image/*"
+                onChange={handleFileSelection}
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                type="file"
+              />
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{
+                    ...primaryButtonStyle,
+                    background: '#132238',
+                    color: '#f8f2e8',
+                    flex: '1 1 180px',
+                  }}
+                  type="button"
+                >
+                  Upload Image
+                </button>
+                <button
+                  onClick={restoreSampleImage}
+                  style={{
+                    ...primaryButtonStyle,
+                    background: 'rgba(19, 34, 56, 0.08)',
+                    color: '#132238',
+                    flex: '1 1 160px',
+                  }}
+                  type="button"
+                >
+                  Use Sample
+                </button>
+              </div>
+            </div>
+
             <div style={{ display: 'grid', gap: '12px', marginBottom: '18px' }}>
-              {Object.entries(transformMetadata).map(([key, transform]) => {
+              {transformEntries.map(([key, transform]) => {
                 const isSelected = key === selectedTransform;
 
                 return (
@@ -330,20 +575,71 @@ function Component() {
               })}
             </div>
 
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '18px' }}>
+            {selectedControl && (
+              <div
+                style={{
+                  marginBottom: '18px',
+                  padding: '16px',
+                  borderRadius: '20px',
+                  background: 'rgba(19, 34, 56, 0.05)',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    gap: '12px',
+                    marginBottom: '10px',
+                    alignItems: 'center',
+                  }}
+                >
+                  <strong>{selectedControl.label}</strong>
+                  <code>{formatControlValue(selectedControl, selectedControlValue)}</code>
+                </div>
+                <input
+                  max={selectedControl.max}
+                  min={selectedControl.min}
+                  onChange={updateControlValue}
+                  step={selectedControl.step}
+                  type="range"
+                  value={selectedControlValue}
+                />
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    marginTop: '8px',
+                    fontSize: '0.82rem',
+                    opacity: 0.72,
+                  }}
+                >
+                  <span>{selectedControl.min}</span>
+                  <span>{selectedControl.max}</span>
+                </div>
+              </div>
+            )}
+
+            <div
+              className="resim-action-grid"
+              style={{
+                display: 'grid',
+                gap: '12px',
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                marginBottom: '18px',
+              }}
+            >
               <button
                 onClick={applySelectedTransform}
                 style={{
                   ...primaryButtonStyle,
                   background: '#ea6a47',
                   color: '#fff8f0',
-                  flex: '1 1 180px',
                   opacity: isReady ? 1 : 0.6,
                 }}
                 type="button"
-                disabled={!isReady}
+                disabled={!isReady || !selectedConfig}
               >
-                Apply {transformMetadata[selectedTransform].label}
+                Apply {selectedConfig ? selectedConfig.label : 'Transform'}
               </button>
               <button
                 onClick={resetPreview}
@@ -351,7 +647,6 @@ function Component() {
                   ...primaryButtonStyle,
                   background: 'rgba(19, 34, 56, 0.08)',
                   color: '#132238',
-                  flex: '1 1 160px',
                   opacity: isReady ? 1 : 0.6,
                 }}
                 type="button"
@@ -359,6 +654,68 @@ function Component() {
               >
                 Reset Preview
               </button>
+              <button
+                onClick={undoLastStep}
+                style={{
+                  ...primaryButtonStyle,
+                  background: 'rgba(19, 34, 56, 0.12)',
+                  color: '#132238',
+                  opacity: historyDepth > 0 ? 1 : 0.6,
+                }}
+                type="button"
+                disabled={historyDepth === 0}
+              >
+                Undo Last Step
+              </button>
+              <button
+                onClick={downloadPreview}
+                style={{
+                  ...primaryButtonStyle,
+                  background: '#2d8f74',
+                  color: '#f5fffb',
+                  opacity: isReady ? 1 : 0.6,
+                }}
+                type="button"
+                disabled={!isReady}
+              >
+                Download PNG
+              </button>
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gap: '10px',
+                marginBottom: '18px',
+                padding: '16px',
+                borderRadius: '20px',
+                background: 'rgba(19, 34, 56, 0.05)',
+              }}
+            >
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '16px',
+                  cursor: 'pointer',
+                }}
+              >
+                <span>
+                  <strong style={{ display: 'block', marginBottom: '4px' }}>Comparison mode</strong>
+                  <span style={{ lineHeight: 1.5 }}>
+                    Show the untouched source beside the processed canvas.
+                  </span>
+                </span>
+                <input
+                  checked={isComparisonMode}
+                  onChange={(event) => setIsComparisonMode(event.target.checked)}
+                  type="checkbox"
+                />
+              </label>
+              <span style={{ fontSize: '0.82rem', opacity: 0.72 }}>
+                Undo depth: {historyDepth}
+              </span>
             </div>
 
             <div
@@ -389,7 +746,7 @@ function Component() {
                 <div>
                   <h2 style={{ margin: '0 0 6px', fontSize: '1.4rem' }}>Preview</h2>
                   <p style={{ margin: 0, lineHeight: 1.6 }}>
-                    The sample image is drawn to a canvas, then transformed in-place with
+                    The active source is drawn to a canvas, then transformed in-place with
                     the wasm export selected on the left.
                   </p>
                 </div>
@@ -401,16 +758,38 @@ function Component() {
                     fontSize: '0.82rem',
                   }}
                 >
-                  {transformMetadata[selectedTransform].label}
+                  {selectedControl
+                    ? `${selectedConfig.label} ${formatControlValue(selectedControl, selectedControlValue)}`
+                    : selectedConfig?.label ?? 'Loading'}
                 </code>
               </div>
 
-              <canvas ref={canvasRef} style={canvasStyle} />
+              <div
+                className={isComparisonMode ? 'resim-compare-grid' : undefined}
+                style={{
+                  display: 'grid',
+                  gap: '16px',
+                  gridTemplateColumns: isComparisonMode ? 'repeat(2, minmax(0, 1fr))' : '1fr',
+                }}
+              >
+                {isComparisonMode && (
+                  <div style={{ display: 'grid', gap: '10px' }}>
+                    <strong style={{ fontSize: '0.92rem' }}>Original</strong>
+                    <canvas ref={originalCanvasRef} style={canvasStyle} />
+                  </div>
+                )}
+                <div style={{ display: 'grid', gap: '10px' }}>
+                  <strong style={{ fontSize: '0.92rem' }}>
+                    {isComparisonMode ? 'Processed' : 'Canvas'}
+                  </strong>
+                  <canvas ref={canvasRef} style={canvasStyle} />
+                </div>
+              </div>
               <img
-                alt="Sample source"
+                alt={sourceLabel}
                 onLoad={syncCanvasWithSource}
                 ref={imageRef}
-                src={cat}
+                src={sourceImageUrl}
                 style={{ display: 'none' }}
               />
             </section>
@@ -418,8 +797,9 @@ function Component() {
             <section style={panelStyle}>
               <h2 style={{ marginTop: 0, fontSize: '1.3rem' }}>Library shape</h2>
               <p style={{ marginTop: 0, lineHeight: 1.7 }}>
-                The Rust core now owns the pixel math, while wasm bindings expose a small
-                browser API around <code>ImageData</code> and canvas read/write helpers.
+                The Rust core owns pixel math, while wasm bindings expose additive browser
+                APIs around <code>ImageData</code>. Parameterized transforms stay explicit
+                and predictable at the callsite.
               </p>
               <pre
                 style={{
@@ -434,13 +814,13 @@ function Component() {
 {`import {
   default as init,
   readCanvasImageData,
-  grayscaleImageData,
+  brightnessImageData,
   writeCanvasImageData,
 } from "resim";
 
 await init();
 const imageData = readCanvasImageData(canvas, ctx);
-const next = grayscaleImageData(imageData);
+const next = brightnessImageData(imageData, 30);
 writeCanvasImageData(ctx, next);`}
               </pre>
             </section>

@@ -13,6 +13,9 @@ This crate contains both the pure image transform logic and the wasm bindings ex
 - grayscale
 - invert
 - blur
+- brightness
+- contrast
+- threshold
 
 ## Local workflow
 
@@ -27,3 +30,17 @@ Generate the wasm package for the demo app:
 ```bash
 wasm-pack build . --target web --out-dir pkg --release
 ```
+
+## Intended API style
+
+The public browser-facing API stays `ImageData`-first:
+
+```javascript
+import init, { contrastImageData } from "@sinansonmez/resim";
+
+await init();
+const next = contrastImageData(imageData, 25);
+```
+
+The wasm package also exposes `getTransformCatalog()` so browser consumers can inspect
+the current transform metadata and build UI around the supported operations.

@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+## [0.0.9] - 2026-03-10
+
+### Added
+
+- Added parameterized brightness, contrast, and threshold transforms to the Rust core and wasm exports.
+- Added interactive parameter controls for the new transforms in the React showcase demo.
+- Added local image upload, PNG export, side-by-side comparison mode, and undo support to the React demo.
+- Added a wasm-exported transform catalog so browser consumers can inspect transform metadata programmatically.
+
+### Changed
+
+- Consolidated transform metadata in the public wasm API so the demo can derive labels, wasm method names, and control definitions from the package itself.
+- Improved the demo's mobile control layout and comparison rendering behavior.
+- Updated the docs to describe the expanded `ImageData`-first API and removed the stale `PLAN.md` reference.
+- Bumped the Rust package version from `0.0.8` to `0.0.9`.
+- Bumped the React demo version from `0.1.1` to `0.1.2`.
+
 ## [0.0.8] - 2026-03-10
 
 ### Added
@@ -10,7 +29,6 @@ All notable changes to this project will be documented in this file.
 - Added wasm-specific bindings that expose `ImageData` and canvas helper APIs for browser consumers.
 - Added baseline Rust tests for transform behavior and dispatch.
 - Added a root `Makefile` with documented local development commands.
-- Added `PLAN.md` to capture the current project direction and near-term priorities.
 
 ### Changed
 
