@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.0.8-alpha] - 2026-03-10
+## [0.0.8] - 2026-03-10
 
 ### Added
 
@@ -19,7 +19,7 @@ All notable changes to this project will be documented in this file.
 - Updated Rust wasm dependencies to current compatible versions.
 - Updated the npm publish workflow to use current GitHub Actions versions and a modern Rust setup path.
 - Refreshed top-level, Rust, and React documentation to match the current architecture and development flow.
-- Bumped the Rust package version from `0.0.7-alpha` to `0.0.8-alpha`.
+- Bumped the Rust package version from `0.0.7-alpha` to `0.0.8`.
 - Bumped the React demo version from `0.1.0` to `0.1.1`.
 
 ### Removed
