@@ -1,18 +1,17 @@
 {
-  "name": "create-wasm-app",
-  "version": "0.1.0",
-  "description": "create an app to consume rust-generated wasm packages",
+  "name": "resim-demo",
+  "version": "0.1.1",
+  "description": "Showcase app for the Resim Rust and WebAssembly image-processing library",
+  "private": true,
   "main": "index.js",
-  "bin": {
-    "create-wasm-app": ".bin/create-wasm-app.js"
-  },
   "scripts": {
-    "build": "webpack --config webpack.config.js",
-    "start": "webpack-dev-server"
+    "build:wasm": "wasm-pack build ../rust --target web --out-dir pkg --release",
+    "build": "npm run build:wasm && webpack --config webpack.config.js",
+    "start": "npm run build:wasm && webpack serve --config webpack.config.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rustwasm/create-wasm-app.git"
+    "url": "git+https://github.com/sinansonmez/resim.git"
   },
   "keywords": [
     "webassembly",
@@ -20,15 +19,14 @@
     "rust",
     "webpack"
   ],
-  "author": "Ashley Williams <ashley666ashley@gmail.com>",
+  "author": "Sinan Sonmez",
   "license": "(MIT OR Apache-2.0)",
   "bugs": {
-    "url": "https://github.com/rustwasm/create-wasm-app/issues"
+    "url": "https://github.com/sinansonmez/resim/issues"
   },
-  "homepage": "https://github.com/rustwasm/create-wasm-app#readme",
+  "homepage": "https://github.com/sinansonmez/resim#readme",
   "devDependencies": {
     "copy-webpack-plugin": "^5.0.0",
-    "resim": "file:../rust/pkg",
     "webpack": "5.89.0",
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "4.15.1"

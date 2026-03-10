@@ -1,36 +1,66 @@
-# Resim - Image Manipulation written in Rust for Javascript world
+# Resim
 
-Resim is an npm package that allows you to perform various image manipulations on your images using Rust, a fast and efficient programming language. Currently, Resim supports converting png images to grayscale, and it aims to expand its feature set in the future.
+Resim is a browser-first image processing showcase built with Rust and WebAssembly.
+The repository contains a small Rust library for pixel transforms and a React demo that
+consumes the generated wasm package.
 
-Disclaimer: Resim is still at a very early phase of development, so don't use it for production.
+Resim is still early-stage. The current focus is a clean core API, accurate docs, and a
+working local demo rather than wide feature coverage.
 
-P.S.: Resim means 'image' in Turkish
+## Current features
 
-## Features
+- `grayscaleImageData`
+- `invertImageData`
+- `blurImageData`
+- `readCanvasImageData`
+- `writeCanvasImageData`
 
-- Convert images to grayscale (function name: `convertToGrayscale`)
-- Convert images to have inverted colors (function name: `invertColors`)
-- Convert images to have blurry effect (function name: `blurImage`)
+The Rust core keeps transform logic separate from browser bindings so the pixel-processing
+functions can be tested without DOM types.
 
-## Installation
+## Repo layout
 
-You can install Resim using npm:
+- `rust/` contains the library source and wasm bindings.
+- `react/` contains the showcase app that imports the generated package.
+- `PLAN.md` captures the current project direction.
 
-```javascript
-npm install resim
+## Local development
+
+Prerequisites:
+
+- Rust toolchain with `cargo`
+- `wasm-pack`
+- Node.js with npm
+
+Build the wasm package and demo bundle:
+
+```bash
+cd react
+npm install
+npm run build
 ```
 
-## Usage
-```javascript
-import * as resim from "resim";
+Start the demo locally:
 
-var canvas = document.getElementById("canvas");
-var ctx = canvas.getContext("2d");
-
-ctx.drawImage(document.getElementById('image'), 0, 0);
-const imageResim = resim.convertToGrayscale(canvas, ctx)
-resim.placeImage(canvas, ctx, imageResim);
+```bash
+cd react
+npm start
 ```
 
-## Example
-Take a look at sample implementation [here](https://github.com/sinansonmez/resim/blob/main/react/index.jsx)
+The React scripts call `wasm-pack` first, which generates `rust/pkg` with the web target for the demo to import and initialize.
+
+## Intended API shape
+
+```javascript
+import {
+  default as init,
+  readCanvasImageData,
+  grayscaleImageData,
+  writeCanvasImageData,
+} from "resim";
+
+await init();
+const imageData = readCanvasImageData(canvas, ctx);
+const transformed = grayscaleImageData(imageData);
+writeCanvasImageData(ctx, transformed);
+```

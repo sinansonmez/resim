@@ -9,7 +9,12 @@ module.exports = {
   },
   mode: "development",
   plugins: [
-    new CopyWebpackPlugin(['index.html'])
+    new CopyWebpackPlugin([
+      {
+        from: "index.html",
+        to: "index.html",
+      },
+    ])
   ],
   module: {
     rules: [
@@ -28,6 +33,9 @@ module.exports = {
         type: 'asset/resource',
       },
     ]
+  },
+  resolve: {
+    extensions: [".js", ".jsx"],
   },
   experiments: {
     syncWebAssembly: true,

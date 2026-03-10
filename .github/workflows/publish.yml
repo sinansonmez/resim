@@ -1,4 +1,5 @@
 name: Publish to NPM
+
 on:
   release:
     types: [created]
@@ -6,28 +7,34 @@ on:
 jobs:
   build-publish:
     runs-on: ubuntu-latest
+
     defaults:
       run:
         working-directory: ./rust
+
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
           registry-url: https://registry.npmjs.org/
-      - uses: actions-rs/toolchain@v1
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
         with:
-          profile: minimal
           target: wasm32-unknown-unknown
-          toolchain: stable
-          override: true
-      - name: Install
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-      - name: cargo-build
-        run: cargo build
-      - name: wasm-build
-        run: wasm-pack build
-      - name: wasm-publish
+
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+
+      - name: Cargo build
+        run: cargo build --release
+
+      - name: wasm-pack build
+        run: wasm-pack build --target bundler --out-dir pkg --release
+
+      - name: wasm-pack publish
         run: wasm-pack publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

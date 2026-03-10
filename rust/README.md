@@ -1,36 +1,29 @@
-# Resim - Image Manipulation written in Rust for Javascript world
+# Rust package
 
-Resim is an npm package that allows you to perform various image manipulations on your images using Rust, a fast and efficient programming language. Currently, Resim supports converting png images to grayscale, and it aims to expand its feature set in the future.
+This crate contains both the pure image transform logic and the wasm bindings exposed to browser consumers.
 
-Disclaimer: Resim is still at a very early phase of development, so don't use it for production.
+## Structure
 
-P.S.: Resim means 'image' in Turkish
+- `src/core.rs` implements raw RGBA pixel transforms.
+- `src/wasm.rs` exposes the browser-facing API with `wasm-bindgen`.
+- `src/lib.rs` re-exports the core functions and wasm entrypoints.
 
-## Features
+## Current transforms
 
-- Convert images to grayscale (function name: `convertToGrayscale`)
-- Convert images to have inverted colors (function name: `invertColors`)
-- Convert images to have blurry effect (function name: `blurImage`)
+- grayscale
+- invert
+- blur
 
-## Installation
+## Local workflow
 
-You can install Resim using npm:
+Run tests from this directory once Rust is installed:
 
-```javascript
-npm install resim
+```bash
+cargo test
 ```
 
-## Usage
-```javascript
-import * as resim from "resim";
+Generate the wasm package for the demo app:
 
-var canvas = document.getElementById("canvas");
-var ctx = canvas.getContext("2d");
-
-ctx.drawImage(document.getElementById('image'), 0, 0);
-const imageResim = resim.convertToGrayscale(canvas, ctx)
-resim.placeImage(canvas, ctx, imageResim);
+```bash
+wasm-pack build . --target web --out-dir pkg --release
 ```
-
-## Example
-Take a look at sample implementation [here](https://github.com/sinansonmez/resim/blob/main/react/index.jsx)
