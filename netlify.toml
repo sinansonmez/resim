@@ -1,0 +1,4 @@
+[build]
+  base = "react"
+  publish = "dist"
+  command = "rustup toolchain install stable && rustup default stable && cargo install wasm-pack --locked && npm run build"
