@@ -4,6 +4,10 @@ on:
   release:
     types: [created]
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build-publish:
     runs-on: ubuntu-latest
@@ -17,7 +21,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 24
           registry-url: https://registry.npmjs.org/
 
       - name: Install Rust
@@ -32,9 +36,7 @@ jobs:
         run: cargo build --release
 
       - name: wasm-pack build
-        run: wasm-pack build --target bundler --out-dir pkg --release
+        run: wasm-pack build --scope sinansonmez --target bundler --out-dir pkg --release
 
       - name: wasm-pack publish
         run: wasm-pack publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
