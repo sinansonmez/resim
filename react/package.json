@@ -1,6 +1,6 @@
 {
   "name": "resim-demo",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Showcase app for the Resim Rust and WebAssembly image-processing library",
   "private": true,
   "main": "index.js",

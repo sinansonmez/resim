@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [0.0.9] - 2026-03-10
+## [0.1.3] - 2026-03-10
 
 ### Added
 
@@ -18,8 +18,7 @@ All notable changes to this project will be documented in this file.
 - Consolidated transform metadata in the public wasm API so the demo can derive labels, wasm method names, and control definitions from the package itself.
 - Improved the demo's mobile control layout and comparison rendering behavior.
 - Updated the docs to describe the expanded `ImageData`-first API and removed the stale `PLAN.md` reference.
-- Bumped the Rust package version from `0.0.8` to `0.0.9`.
-- Bumped the React demo version from `0.1.1` to `0.1.2`.
+- Aligned the Rust crate and React demo versions at `0.1.3`.
 
 ## [0.0.8] - 2026-03-10
 
