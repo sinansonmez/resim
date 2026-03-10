@@ -1,4 +1,7 @@
-react/dist
-react/node_modules
-rust/pkg
-rust/target
+/react/dist
+/react/node_modules
+/rust/pkg
+/rust/target
+
+# Local editor metadata
+/.idea/
