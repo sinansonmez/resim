@@ -1,15 +1,19 @@
 # React demo
 
 This app is the showcase consumer for the generated Resim wasm package.
-It demonstrates the current transform catalog, including parameterized controls for brightness,
-contrast, and threshold. The transform list is loaded from the wasm package's
-`getTransformCatalog()` export so the demo reflects the public browser API more directly.
+
+## What it covers
+
+- transform catalog loading through `getTransformCatalog()`
+- parameterized controls for brightness, contrast, saturation, opacity, gamma, and threshold
+- local upload, reset, undo, comparison, and PNG export flows
 
 ## Local workflow
 
 ```bash
 npm install
 npm run build
+npm run smoke
 npm start
 ```
 

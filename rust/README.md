@@ -1,12 +1,6 @@
 # Rust package
 
-This crate contains both the pure image transform logic and the wasm bindings exposed to browser consumers.
-
-## Structure
-
-- `src/core.rs` implements raw RGBA pixel transforms.
-- `src/wasm.rs` exposes the browser-facing API with `wasm-bindgen`.
-- `src/lib.rs` re-exports the core functions and wasm entrypoints.
+This crate contains the validated pixel-processing core and the wasm bindings exposed to browser consumers.
 
 ## Current transforms
 
@@ -16,31 +10,55 @@ This crate contains both the pure image transform logic and the wasm bindings ex
 - brightness
 - contrast
 - threshold
+- sharpen
+- saturation
+- sepia
+- opacity
+- gamma
+- resize
+
+## Core API
+
+Important Rust-side entry points:
+
+- `apply_transform`
+- `apply_transform_sequence`
+- `validate_image`
+- `Transform`
+- `ResimError`
+
+The core now rejects malformed buffers, zero dimensions, and out-of-range parameter values instead of silently clamping every invalid call.
+
+## Browser API
+
+The wasm package exposes:
+
+- `getTransformCatalog()`
+- `readImageDataFromCanvas()` and `writeImageDataToCanvas()`
+- backward-compatible aliases `readCanvasImageData()` and `writeCanvasImageData()`
+- individual `*ImageData` transform functions
+- `resizeImageData()`
+- `applyCanvasTransform()` and the older alias `applyTransformToCanvas()`
 
 ## Local workflow
 
-Run tests from this directory once Rust is installed:
-
 ```bash
 cargo test
-```
-
-Generate the wasm package for the demo app:
-
-```bash
 wasm-pack build . --target web --out-dir pkg --release
+wasm-pack test --headless --chrome
 ```
 
-## Intended API style
-
-The public browser-facing API stays `ImageData`-first:
+## Example
 
 ```javascript
-import init, { contrastImageData } from "@sinansonmez/resim";
+import init, {
+  contrastImageData,
+  readImageDataFromCanvas,
+  writeImageDataToCanvas,
+} from "@sinansonmez/resim";
 
 await init();
+const imageData = readImageDataFromCanvas(canvas, ctx);
 const next = contrastImageData(imageData, 25);
+writeImageDataToCanvas(ctx, next);
 ```
-
-The wasm package also exposes `getTransformCatalog()` so browser consumers can inspect
-the current transform metadata and build UI around the supported operations.

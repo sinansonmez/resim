@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  rust-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          target: wasm32-unknown-unknown
+      - name: Run Rust tests
+        run: cargo test
+
+  demo-build-and-smoke:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./react
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          target: wasm32-unknown-unknown
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+        working-directory: ./rust
+      - name: Install npm dependencies
+        run: npm ci
+      - name: Build demo
+        run: npm run build
+      - name: Run smoke checks
+        run: npm run smoke
+
+  wasm-browser-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./rust
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          target: wasm32-unknown-unknown
+      - uses: browser-actions/setup-chrome@v1
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+      - name: Run wasm browser tests
+        run: wasm-pack test --headless --chrome
+
+  release-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          target: wasm32-unknown-unknown
+      - name: Install wasm-pack
+        run: cargo install wasm-pack
+        working-directory: ./rust
+      - name: Verify cargo package
+        run: cargo package --allow-dirty
+        working-directory: ./rust
+      - name: Install demo dependencies
+        run: npm ci
+        working-directory: ./react
+      - name: Verify npm publish artifact
+        run: npm pack --dry-run
+        working-directory: ./react

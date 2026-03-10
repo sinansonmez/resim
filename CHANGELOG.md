@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-11
+
+### Added
+
+- Added nearest-neighbor image resize support across the Rust core, wasm bindings, and React demo.
+- Added validated transform composition and the sharpen, saturation, sepia, opacity, and gamma transforms to the Rust core and wasm bindings.
+- Added browser-facing wasm aliases for the canonical canvas helper names and a composed image-data helper.
+- Added contributor, architecture, troubleshooting, and minimal browser example documentation.
+- Added CI automation for Rust tests, frontend build/smoke checks, wasm browser tests, and release-artifact verification.
+
+### Changed
+
+- Standardized transform parameter validation and now return explicit errors for invalid dimensions, malformed buffers, and unsupported parameter values.
+- Reworked the React demo into a preset-driven editing studio with compare, undo, export, and fine-tune workflows.
+- Replaced the demo's Tailwind-based styling with a custom CSS design system for more predictable cross-browser rendering.
+- Updated the demo to consume shared helper utilities and cover the expanded transform catalog.
+- Added release-check and smoke targets to the root `Makefile`.
+- Published demo page: http://resim-js.netlify.app/
+- Published npm package page: http://npmjs.com/package/resim
+- Aligned the Rust crate and React demo versions at `1.0.0`.
+
 ## [0.1.3] - 2026-03-10
 
 ### Added
