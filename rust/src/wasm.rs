@@ -1,6 +1,5 @@
-use js_sys::{Array, Object, Reflect};
+use js_sys::{Array, Object, Reflect, Uint8ClampedArray};
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::Clamped;
 use web_sys::{CanvasRenderingContext2d, HtmlCanvasElement, ImageData};
 
 use crate::core::{
@@ -108,8 +107,9 @@ fn control_metadata(
     Ok(control)
 }
 
-fn image_data_from_pixels(mut pixels: Vec<u8>, width: u32, height: u32) -> Result<ImageData, JsValue> {
-    ImageData::new_with_u8_clamped_array_and_sh(Clamped(&mut pixels), width, height)
+fn image_data_from_pixels(pixels: &[u8], width: u32, height: u32) -> Result<ImageData, JsValue> {
+    let js_pixels = Uint8ClampedArray::from(pixels);
+    ImageData::new_with_js_u8_clamped_array_and_sh(&js_pixels, width, height)
 }
 
 fn read_image_data_pixels(image_data: &ImageData) -> Result<(Vec<u8>, u32, u32), JsValue> {
@@ -124,7 +124,7 @@ fn transform_image_data(image_data: ImageData, transform: Transform) -> Result<I
     let (pixels, width, height) = read_image_data_pixels(&image_data)?;
     let next_pixels =
         apply_transform(&pixels, width, height, transform).map_err(|error| js_error(error.to_string()))?;
-    image_data_from_pixels(next_pixels, width, height)
+    image_data_from_pixels(&next_pixels, width, height)
 }
 
 #[wasm_bindgen(js_name = getTransformCatalog)]
@@ -416,7 +416,7 @@ pub fn resizeImageData(
     let (pixels, source_width, source_height) = read_image_data_pixels(&image_data)?;
     let next_pixels = resize_image(&pixels, source_width, source_height, width, height)
         .map_err(|error| js_error(error.to_string()))?;
-    image_data_from_pixels(next_pixels, width, height)
+    image_data_from_pixels(&next_pixels, width, height)
 }
 
 #[wasm_bindgen(js_name = applyPresetImageData)]
@@ -427,7 +427,7 @@ pub fn applyPresetImageData(image_data: ImageData, preset_id: String) -> Result<
     let (pixels, width, height) = read_image_data_pixels(&image_data)?;
     let next_pixels =
         apply_preset(&pixels, width, height, preset).map_err(|error| js_error(error.to_string()))?;
-    image_data_from_pixels(next_pixels, width, height)
+    image_data_from_pixels(&next_pixels, width, height)
 }
 
 #[wasm_bindgen(js_name = composeImageDataTransforms)]
@@ -441,7 +441,7 @@ pub fn composeImageDataTransforms(
     let transform_values: Vec<Transform> = transforms.into_iter().map(Transform::from).collect();
     let next_pixels = apply_transform_sequence(&pixels, width, height, &transform_values)
         .map_err(|error| js_error(error.to_string()))?;
-    image_data_from_pixels(next_pixels, width, height)
+    image_data_from_pixels(&next_pixels, width, height)
 }
 
 #[wasm_bindgen(js_name = applyTransformToCanvas)]
@@ -471,8 +471,7 @@ pub fn applyCanvasTransform(
 #[cfg(all(test, target_arch = "wasm32"))]
 mod tests {
     use super::{brightnessImageData, getTransformCatalog};
-    use js_sys::Reflect;
-    use wasm_bindgen::Clamped;
+    use js_sys::{Reflect, Uint8ClampedArray};
     use wasm_bindgen::JsValue;
     use wasm_bindgen_test::*;
     use web_sys::ImageData;
@@ -493,9 +492,9 @@ mod tests {
 
     #[wasm_bindgen_test]
     fn brightness_export_transforms_image_data() {
-        let mut pixels = vec![10, 20, 30, 255];
-        let image_data =
-            ImageData::new_with_u8_clamped_array_and_sh(Clamped(&mut pixels), 1, 1).unwrap();
+        let pixels = vec![10, 20, 30, 255];
+        let js_pixels = Uint8ClampedArray::from(pixels.as_slice());
+        let image_data = ImageData::new_with_js_u8_clamped_array_and_sh(&js_pixels, 1, 1).unwrap();
         let next = brightnessImageData(image_data, 10).unwrap();
         let data = next.data().to_vec();
 
